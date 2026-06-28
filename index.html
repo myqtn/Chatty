@@ -200,6 +200,13 @@
             min-height: 20px;
         }
 
+        #loginScreen .login-success {
+            color: #25d366;
+            font-size: 13px;
+            text-align: center;
+            min-height: 20px;
+        }
+
         /* ==========================================
                    CHAT APP – HEADER
                 ========================================== */
@@ -659,10 +666,11 @@
                 </div>
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
-                    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+                    <input id="password" type="password" placeholder="Password (min 6 chars)" autocomplete="current-password" />
                 </div>
 
                 <div id="loginError" class="login-error"></div>
+                <div id="loginSuccess" class="login-success"></div>
 
                 <button class="btn-primary" onclick="handleLogin()">
                     <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i> Sign In
@@ -757,7 +765,6 @@
             setDoc,
             updateDoc,
             serverTimestamp,
-            where,
             limit,
             onDisconnect
         } from 'firebase/firestore';
@@ -787,11 +794,12 @@
         const statusText = document.getElementById('statusText');
         const statusDot = document.getElementById('statusDot');
         const loginError = document.getElementById('loginError');
+        const loginSuccess = document.getElementById('loginSuccess');
         const emojiPicker = document.getElementById('emojiPicker');
 
         // ---- STATE ----
-        let currentUser = null; // { uid, email, displayName, avatarColor }
-        let allUsers = {}; // uid -> { displayName, avatarColor, online, isTyping }
+        let currentUser = null;
+        let allUsers = {};
         let typingTimeout = null;
         let isTyping = false;
         let unsubMessages = null;
@@ -800,7 +808,6 @@
 
         // ---- HELPERS ----
         function getAvatarColor(uid) {
-            // Consistent pastel-ish color from uid
             let hash = 0;
             for (let i = 0; i < uid.length; i++) {
                 hash = uid.charCodeAt(i) + ((hash << 5) - hash);
@@ -881,7 +888,6 @@
                     time: serverTimestamp()
                 });
                 messageInput.value = '';
-                // clear typing
                 const userRef = doc(db, 'users', currentUser.uid);
                 await updateDoc(userRef, { isTyping: false }).catch(() => {});
                 clearTimeout(typingTimeout);
@@ -892,7 +898,6 @@
             }
         };
 
-        // Enter key
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -913,10 +918,7 @@
             const q = query(collection(db, 'messages'), orderBy('time', 'asc'));
 
             unsubMessages = onSnapshot(q, (snapshot) => {
-                // preserve scroll position
                 const wasAtBottom = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 30;
-
-                // clear all but keep loading state
                 chatEl.innerHTML = '';
 
                 if (snapshot.empty) {
@@ -925,7 +927,6 @@
                     return;
                 }
 
-                let lastSender = '';
                 let fragment = document.createDocumentFragment();
 
                 snapshot.forEach((doc) => {
@@ -934,7 +935,6 @@
                     const wrapper = document.createElement('div');
                     wrapper.className = `msg-wrapper ${isSent ? 'sent' : 'received'}`;
 
-                    // sender name + avatar (only for received)
                     if (!isSent) {
                         const nameDiv = document.createElement('div');
                         nameDiv.className = 'sender-name';
@@ -967,7 +967,6 @@
 
                 chatEl.appendChild(fragment);
 
-                // scroll
                 if (wasAtBottom || snapshot.docs.length > 0) {
                     setTimeout(() => {
                         chatEl.scrollTop = chatEl.scrollHeight;
@@ -978,7 +977,7 @@
             });
         }
 
-        // ---- LOAD USERS (online, typing) ----
+        // ---- LOAD USERS ----
         function loadUsers() {
             if (unsubUsers) unsubUsers();
 
@@ -1002,7 +1001,6 @@
 
                 allUsers = users;
 
-                // update header status
                 if (currentUser) {
                     const me = users[currentUser.uid];
                     if (me && me.online) {
@@ -1016,7 +1014,6 @@
                     }
                 }
 
-                // update typing indicator
                 updateTypingIndicator();
 
             }, (err) => {
@@ -1056,17 +1053,15 @@
                 `;
         }
 
-        // ---- AUTH ----
+        // ---- CREATE USER PROFILE ----
         async function createUserProfile(user) {
             const userRef = doc(db, 'users', user.uid);
             const snap = await getDoc(userRef);
             if (snap.exists()) {
-                // update online
                 await updateDoc(userRef, {
                     online: true,
                     lastSeen: serverTimestamp()
                 });
-                // onDisconnect
                 onDisconnect(userRef).update({
                     online: false,
                     lastSeen: serverTimestamp()
@@ -1088,15 +1083,16 @@
                 createdAt: serverTimestamp()
             });
 
-            // onDisconnect
             onDisconnect(userRef).update({
                 online: false,
                 lastSeen: serverTimestamp()
             });
         }
 
+        // ---- AUTH STATE HANDLER ----
         async function handleAuthState(user) {
             loginError.textContent = '';
+            loginSuccess.textContent = '';
 
             if (user) {
                 try {
@@ -1123,7 +1119,6 @@
                     loginError.textContent = 'Error loading profile. Try again.';
                 }
             } else {
-                // logged out
                 currentUser = null;
                 if (unsubMessages) { unsubMessages();
                     unsubMessages = null; }
@@ -1136,46 +1131,66 @@
                 emojiPicker.classList.remove('show');
                 statusText.textContent = 'offline';
                 statusDot.className = 'dot offline';
+                // Clear success message after logout
+                loginSuccess.textContent = '';
             }
         }
 
         // ---- AUTH LISTENER ----
         onAuthStateChanged(auth, handleAuthState);
 
-        // ---- LOGIN / SIGNUP ----
-        function getCredentials() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            if (!email || !password) {
-                loginError.textContent = 'Please enter email and password.';
-                return null;
-            }
-            loginError.textContent = '';
-            return { email, password };
-        }
+        // ============================================================
+        //  USER REPLACED FUNCTIONS (exactly as provided)
+        // ============================================================
 
-        window.handleLogin = async function() {
-            const creds = getCredentials();
-            if (!creds) return;
+        window.signUp = async function() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
             try {
-                await signInWithEmailAndPassword(auth, creds.email, creds.password);
-            } catch (err) {
-                loginError.textContent = err.message || 'Login failed.';
-                console.error(err);
+                await createUserWithEmailAndPassword(auth, email, password);
+                alert("Account created successfully!");
+                // Clear form fields after successful signup
+                document.getElementById("email").value = '';
+                document.getElementById("password").value = '';
+                loginSuccess.textContent = '✅ Account created! You are now signed in.';
+                loginError.textContent = '';
+            } catch (error) {
+                alert(error.message);
+                console.log(error);
+                loginError.textContent = error.message;
+                loginSuccess.textContent = '';
             }
         };
 
-        window.handleSignUp = async function() {
-            const creds = getCredentials();
-            if (!creds) return;
+        window.login = async function() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
             try {
-                await createUserWithEmailAndPassword(auth, creds.email, creds.password);
-            } catch (err) {
-                loginError.textContent = err.message || 'Signup failed.';
-                console.error(err);
+                await signInWithEmailAndPassword(auth, email, password);
+                // Clear form on success
+                document.getElementById("email").value = '';
+                document.getElementById("password").value = '';
+                loginError.textContent = '';
+                loginSuccess.textContent = '✅ Signed in successfully!';
+            } catch (error) {
+                alert(error.message);
+                loginError.textContent = error.message;
+                loginSuccess.textContent = '';
             }
         };
 
+        // ---- WRAPPER FUNCTIONS FOR BUTTONS ----
+        window.handleSignUp = function() {
+            window.signUp();
+        };
+
+        window.handleLogin = function() {
+            window.login();
+        };
+
+        // ---- LOGOUT ----
         window.handleLogout = async function() {
             try {
                 if (currentUser) {
@@ -1198,14 +1213,12 @@
             }
         });
 
-        // click outside emoji picker
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.input-area') && !e.target.closest('#emojiPicker')) {
                 emojiPicker.classList.remove('show');
             }
         });
 
-        // ---- INIT ----
         console.log('🔥 Chatty WhatsApp-style app initialized.');
     </script>
 
