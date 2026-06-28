@@ -122,9 +122,10 @@
             transform: translateY(-50%);
             color: #8696a0;
             font-size: 16px;
+            transition: color 0.3s;
         }
 
-        #loginScreen .login-form input {
+        #loginScreen .login-form .input-group input {
             width: 100%;
             padding: 16px 16px 16px 46px;
             border: 2px solid #e9edef;
@@ -135,12 +136,34 @@
             outline: none;
         }
 
-        #loginScreen .login-form input:focus {
+        #loginScreen .login-form .input-group input:focus {
             border-color: #25d366;
             box-shadow: 0 0 0 4px rgba(37, 211, 102, 0.12);
         }
 
-        #loginScreen .login-form .btn-primary {
+        #loginScreen .login-form .input-group input:focus+i {
+            color: #25d366;
+        }
+
+        /* ===== SUBMIT BUTTON (dynamic) ===== */
+        #submitBtnWrapper {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.4s ease 0.1s,
+                margin 0.3s ease;
+            margin: 0;
+        }
+
+        #submitBtnWrapper.visible {
+            max-height: 80px;
+            opacity: 1;
+            margin: 6px 0 2px 0;
+        }
+
+        #submitBtnWrapper .btn-primary {
+            width: 100%;
             padding: 16px;
             border: none;
             border-radius: 12px;
@@ -149,66 +172,132 @@
             background: #25d366;
             color: #fff;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            margin-top: 4px;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
         }
 
-        #loginScreen .login-form .btn-primary:hover {
+        #submitBtnWrapper .btn-primary:hover {
             background: #1da955;
+            box-shadow: 0 4px 16px rgba(37, 211, 102, 0.35);
         }
-        #loginScreen .login-form .btn-primary:active {
+
+        #submitBtnWrapper .btn-primary:active {
             transform: scale(0.97);
         }
 
-        #loginScreen .login-form .btn-secondary {
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 500;
-            background: transparent;
-            color: #075e54;
-            cursor: pointer;
-            transition: background 0.2s;
+        #submitBtnWrapper .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
-        #loginScreen .login-form .btn-secondary:hover {
-            background: rgba(7, 94, 84, 0.06);
+        #submitBtnWrapper .btn-primary .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
 
-        #loginScreen .login-form .divider {
+        #submitBtnWrapper .btn-primary.loading .spinner {
+            display: inline-block;
+        }
+
+        #submitBtnWrapper .btn-primary.loading .btn-text {
+            opacity: 0.8;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== SECONDARY BUTTONS (appear after password) ===== */
+        #secondaryActions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.4s ease 0.15s,
+                margin 0.3s ease;
+            margin: 0;
+        }
+
+        #secondaryActions.visible {
+            max-height: 120px;
+            opacity: 1;
+            margin: 4px 0 0 0;
+        }
+
+        #secondaryActions .divider {
             display: flex;
             align-items: center;
             gap: 12px;
             color: #8696a0;
-            font-size: 13px;
-            margin: 4px 0;
+            font-size: 12px;
+            padding: 2px 0;
         }
 
-        #loginScreen .login-form .divider::before,
-        #loginScreen .login-form .divider::after {
+        #secondaryActions .divider::before,
+        #secondaryActions .divider::after {
             content: '';
             flex: 1;
             height: 1px;
             background: #e9edef;
         }
 
-        #loginScreen .login-error {
+        #secondaryActions .btn-secondary {
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            background: transparent;
+            color: #075e54;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        #secondaryActions .btn-secondary:hover {
+            background: rgba(7, 94, 84, 0.06);
+        }
+
+        #secondaryActions .btn-secondary i {
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+
+        /* ===== MESSAGES ===== */
+        #loginError {
             color: #e74c3c;
             font-size: 13px;
             text-align: center;
             min-height: 20px;
+            margin-top: 2px;
         }
 
-        #loginScreen .login-success {
+        #loginSuccess {
             color: #25d366;
             font-size: 13px;
             text-align: center;
             min-height: 20px;
+            margin-top: 2px;
         }
 
         /* ==========================================
-                   CHAT APP – HEADER
+                   CHAT APP – HEADER (unchanged)
                 ========================================== */
         #chatApp {
             display: none;
@@ -336,7 +425,6 @@
             scroll-behavior: smooth;
         }
 
-        /* custom scrollbar */
         #chat::-webkit-scrollbar {
             width: 6px;
         }
@@ -378,7 +466,6 @@
             align-items: flex-start;
         }
 
-        /* sender name (only for received) */
         .msg-wrapper .sender-name {
             font-size: 12px;
             font-weight: 600;
@@ -568,7 +655,7 @@
             transform: none;
         }
 
-        /* ===== EMOJI PICKER (simple) ===== */
+        /* ===== EMOJI PICKER ===== */
         #emojiPicker {
             display: none;
             background: #fff;
@@ -600,9 +687,7 @@
             background: #f0f2f5;
         }
 
-        /* ==========================================
-                   RESPONSIVE TWEAKS
-                ========================================== */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 400px) {
             .msg-wrapper {
                 max-width: 90%;
@@ -627,22 +712,31 @@
             }
         }
 
-        /* ===== UTILITY ===== */
-        .hidden {
-            display: none !important;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        /* ===== LOADING SHIMMER ===== */
         .loading-msg {
             display: flex;
             justify-content: center;
             padding: 20px;
             color: #8696a0;
             font-size: 14px;
+        }
+
+        /* ===== PASSWORD VISIBILITY TOGGLE ===== */
+        .input-group .toggle-pwd {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #8696a0;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .input-group .toggle-pwd:hover {
+            color: #075e54;
         }
     </style>
 </head>
@@ -660,33 +754,48 @@
             </div>
 
             <div class="login-form">
+                <!-- Email -->
                 <div class="input-group">
                     <i class="fas fa-envelope"></i>
                     <input id="email" type="email" placeholder="Email" autocomplete="email" />
                 </div>
+
+                <!-- Password -->
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
                     <input id="password" type="password" placeholder="Password (min 6 chars)" autocomplete="current-password" />
+                    <button class="toggle-pwd" type="button" id="togglePwd" tabindex="-1">
+                        <i class="fas fa-eye"></i>
+                    </button>
                 </div>
 
+                <!-- Error & Success messages -->
                 <div id="loginError" class="login-error"></div>
                 <div id="loginSuccess" class="login-success"></div>
 
-                <button class="btn-primary" onclick="handleLogin()">
-                    <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i> Sign In
-                </button>
+                <!-- ===== SUBMIT BUTTON (dynamic) ===== -->
+                <div id="submitBtnWrapper">
+                    <button class="btn-primary" id="submitBtn" disabled>
+                        <span class="spinner"></span>
+                        <span class="btn-text">Continue</span>
+                    </button>
+                </div>
 
-                <div class="divider">or</div>
-
-                <button class="btn-secondary" onclick="handleSignUp()">
-                    <i class="fas fa-user-plus" style="margin-right:8px;"></i> Create New Account
-                </button>
+                <!-- ===== SECONDARY ACTIONS (dynamic) ===== -->
+                <div id="secondaryActions">
+                    <div class="divider">or</div>
+                    <button class="btn-secondary" id="signUpBtn">
+                        <i class="fas fa-user-plus"></i> Create New Account
+                    </button>
+                    <button class="btn-secondary" id="signInBtn">
+                        <i class="fas fa-sign-in-alt"></i> Sign In Instead
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- ===== CHAT APP ===== -->
         <div id="chatApp">
-
             <!-- Header -->
             <div class="chat-header">
                 <div class="header-left">
@@ -727,7 +836,6 @@
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
-
         </div>
     </div>
 
@@ -797,6 +905,16 @@
         const loginSuccess = document.getElementById('loginSuccess');
         const emojiPicker = document.getElementById('emojiPicker');
 
+        // ---- NEW DOM REFS for dynamic buttons ----
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitBtnWrapper = document.getElementById('submitBtnWrapper');
+        const secondaryActions = document.getElementById('secondaryActions');
+        const signUpBtn = document.getElementById('signUpBtn');
+        const signInBtn = document.getElementById('signInBtn');
+        const togglePwdBtn = document.getElementById('togglePwd');
+
         // ---- STATE ----
         let currentUser = null;
         let allUsers = {};
@@ -805,6 +923,7 @@
         let unsubMessages = null;
         let unsubUsers = null;
         let lastTypingUpdate = 0;
+        let isSubmitting = false;
 
         // ---- HELPERS ----
         function getAvatarColor(uid) {
@@ -837,6 +956,47 @@
             return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' +
                 d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
+
+        // ---- TOGGLE PASSWORD VISIBILITY ----
+        togglePwdBtn.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePwdBtn.querySelector('i').className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+        });
+
+        // ---- DYNAMIC BUTTON VISIBILITY ----
+        function checkPasswordAndShowButtons() {
+            const hasPassword = passwordInput.value.trim().length > 0;
+            const hasEmail = emailInput.value.trim().length > 0;
+
+            // Show submit button when password has text
+            if (hasPassword && hasEmail) {
+                submitBtnWrapper.classList.add('visible');
+                submitBtn.disabled = false;
+            } else {
+                submitBtnWrapper.classList.remove('visible');
+                submitBtn.disabled = true;
+            }
+
+            // Show secondary actions when password has text
+            if (hasPassword && hasEmail) {
+                secondaryActions.classList.add('visible');
+            } else {
+                secondaryActions.classList.remove('visible');
+            }
+
+            // Clear old messages
+            if (!hasPassword || !hasEmail) {
+                loginError.textContent = '';
+                loginSuccess.textContent = '';
+            }
+        }
+
+        emailInput.addEventListener('input', checkPasswordAndShowButtons);
+        passwordInput.addEventListener('input', checkPasswordAndShowButtons);
+
+        // Also check on page load
+        setTimeout(checkPasswordAndShowButtons, 100);
 
         // ---- EMOJI PICKER ----
         const EMOJIS = ['😊', '😂', '❤️', '🔥', '👍', '👋', '😍', '🤣', '💯', '🎉', '✨', '🥰', '😘', '💪', '🤔', '🙏', '💕', '🥺', '😎', '👀'];
@@ -1131,7 +1291,6 @@
                 emojiPicker.classList.remove('show');
                 statusText.textContent = 'offline';
                 statusDot.className = 'dot offline';
-                // Clear success message after logout
                 loginSuccess.textContent = '';
             }
         }
@@ -1140,55 +1299,129 @@
         onAuthStateChanged(auth, handleAuthState);
 
         // ============================================================
-        //  USER REPLACED FUNCTIONS (exactly as provided)
+        //  UNIFIED SUBMIT BUTTON — handles both login & signup
         // ============================================================
+        async function handleUnifiedSubmit() {
+            if (isSubmitting) return;
 
-        window.signUp = async function() {
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                loginError.textContent = 'Please enter both email and password.';
+                return;
+            }
+
+            if (password.length < 6) {
+                loginError.textContent = 'Password must be at least 6 characters.';
+                return;
+            }
+
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            loginError.textContent = '';
+            loginSuccess.textContent = '';
+
+            try {
+                // First, try to sign in
+                await signInWithEmailAndPassword(auth, email, password);
+                // Success — auth state listener will handle UI
+                loginSuccess.textContent = '✅ Signed in successfully!';
+                emailInput.value = '';
+                passwordInput.value = '';
+                checkPasswordAndShowButtons();
+            } catch (loginErr) {
+                // If user not found, try sign up
+                if (loginErr.code === 'auth/user-not-found') {
+                    try {
+                        await createUserWithEmailAndPassword(auth, email, password);
+                        loginSuccess.textContent = '✅ Account created & signed in!';
+                        emailInput.value = '';
+                        passwordInput.value = '';
+                        checkPasswordAndShowButtons();
+                    } catch (signupErr) {
+                        loginError.textContent = signupErr.message || 'Signup failed.';
+                        console.error('Signup error:', signupErr);
+                    }
+                } else if (loginErr.code === 'auth/wrong-password') {
+                    loginError.textContent = 'Incorrect password. Please try again.';
+                } else if (loginErr.code === 'auth/invalid-email') {
+                    loginError.textContent = 'Please enter a valid email address.';
+                } else {
+                    loginError.textContent = loginErr.message || 'Login failed.';
+                    console.error('Login error:', loginErr);
+                }
+            }
+
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+
+            // Re-check visibility
+            checkPasswordAndShowButtons();
+        }
+
+        // ---- ATTACH EVENTS ----
+        submitBtn.addEventListener('click', handleUnifiedSubmit);
+
+        // Enter key on password field triggers submit
+        passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !submitBtn.disabled) {
+                e.preventDefault();
+                handleUnifiedSubmit();
+            }
+        });
+
+        // ---- SECONDARY BUTTONS ----
+        signUpBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                loginError.textContent = 'Please enter both email and password.';
+                return;
+            }
+
+            if (password.length < 6) {
+                loginError.textContent = 'Password must be at least 6 characters.';
+                return;
+            }
 
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
-                alert("Account created successfully!");
-                // Clear form fields after successful signup
-                document.getElementById("email").value = '';
-                document.getElementById("password").value = '';
-                loginSuccess.textContent = '✅ Account created! You are now signed in.';
+                loginSuccess.textContent = '✅ Account created successfully!';
                 loginError.textContent = '';
-            } catch (error) {
-                alert(error.message);
-                console.log(error);
-                loginError.textContent = error.message;
-                loginSuccess.textContent = '';
+                emailInput.value = '';
+                passwordInput.value = '';
+                checkPasswordAndShowButtons();
+            } catch (err) {
+                loginError.textContent = err.message || 'Signup failed.';
+                console.error('Signup error:', err);
             }
-        };
+        });
 
-        window.login = async function() {
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
+        signInBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                loginError.textContent = 'Please enter both email and password.';
+                return;
+            }
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // Clear form on success
-                document.getElementById("email").value = '';
-                document.getElementById("password").value = '';
-                loginError.textContent = '';
                 loginSuccess.textContent = '✅ Signed in successfully!';
-            } catch (error) {
-                alert(error.message);
-                loginError.textContent = error.message;
-                loginSuccess.textContent = '';
+                loginError.textContent = '';
+                emailInput.value = '';
+                passwordInput.value = '';
+                checkPasswordAndShowButtons();
+            } catch (err) {
+                loginError.textContent = err.message || 'Login failed.';
+                console.error('Login error:', err);
             }
-        };
-
-        // ---- WRAPPER FUNCTIONS FOR BUTTONS ----
-        window.handleSignUp = function() {
-            window.signUp();
-        };
-
-        window.handleLogin = function() {
-            window.login();
-        };
+        });
 
         // ---- LOGOUT ----
         window.handleLogout = async function() {
@@ -1219,7 +1452,7 @@
             }
         });
 
-        console.log('🔥 Chatty WhatsApp-style app initialized.');
+        console.log('🔥 Chatty WhatsApp-style app initialized with dynamic submit button.');
     </script>
 
 </body>
